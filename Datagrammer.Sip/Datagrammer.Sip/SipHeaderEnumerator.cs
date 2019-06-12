@@ -25,27 +25,15 @@ namespace Datagrammer.Sip
         {
             ClearCurrentHeader();
 
-            if(IsCurrentLineEmpty)
+            while (!IsCurrentLineEmpty && TrySkipLine() && TrySliceLine())
             {
-                return false;
+                if(TryParseHeader())
+                {
+                    return true;
+                }
             }
 
-            if(!TrySkipLine())
-            {
-                return false;
-            }
-
-            if(!TrySliceLine())
-            {
-                return false;
-            }
-
-            if(!TryParseHeader())
-            {
-                return false;
-            }
-
-            return true;
+            return false;
         }
 
         private void ClearCurrentHeader()

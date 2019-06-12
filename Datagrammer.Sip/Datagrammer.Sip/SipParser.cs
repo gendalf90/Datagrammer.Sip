@@ -43,7 +43,7 @@ namespace Datagrammer.Sip
 
             var uri = SliceWord(lineAfterMethod);
 
-            if(uri.IsEmpty)
+            if(!IsUriValid(uri))
             {
                 return false;
             }
@@ -108,6 +108,13 @@ namespace Datagrammer.Sip
             }
 
             if (!TryToSkipWordWithSpace(lineAfterVersion, out var lineAfterStatusCode))
+            {
+                return false;
+            }
+
+            var reasonPhrase = SliceWord(lineAfterStatusCode);
+
+            if(!IsReasonPhraseValid(reasonPhrase))
             {
                 return false;
             }
@@ -253,12 +260,22 @@ namespace Datagrammer.Sip
 
         private static bool IsMethodValid(ReadOnlyMemory<byte> bytes)
         {
-            return !bytes.IsEmpty && SipCharacters.HasValidTokenChars(bytes.Span);
+            return !bytes.IsEmpty && SipCharacters.IsValidToken(bytes.Span);
         }
 
         private static bool IsStatusCodeValid(ReadOnlyMemory<byte> bytes)
         {
-            return bytes.Length == StatusCodeLenght && SipCharacters.HasOnlyDigits(bytes.Span);
+            return bytes.Length == StatusCodeLenght && SipCharacters.IsDigits(bytes.Span);
+        }
+
+        private static bool IsUriValid(ReadOnlyMemory<byte> bytes)
+        {
+            return !bytes.IsEmpty && !SipCharacters.HasCROrLF(bytes.Span);
+        }
+
+        private static bool IsReasonPhraseValid(ReadOnlyMemory<byte> bytes)
+        {
+            return !SipCharacters.HasCROrLF(bytes.Span);
         }
     }
 }

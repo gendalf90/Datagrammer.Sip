@@ -69,7 +69,7 @@ namespace Datagrammer.Sip
             return result;
         }
 
-        public static bool HasValidTokenChars(ReadOnlySpan<byte> bytes)
+        public static bool IsValidToken(ReadOnlySpan<byte> bytes)
         {
             foreach(var b in bytes)
             {
@@ -95,7 +95,7 @@ namespace Datagrammer.Sip
             return true;
         }
 
-        public static bool HasOnlyDigits(ReadOnlySpan<byte> bytes)
+        public static bool IsDigits(ReadOnlySpan<byte> bytes)
         {
             foreach (var b in bytes)
             {
@@ -106,6 +106,19 @@ namespace Datagrammer.Sip
             }
 
             return true;
+        }
+
+        public static bool HasCROrLF(ReadOnlySpan<byte> bytes)
+        {
+            foreach(var b in bytes)
+            {
+                if(b == 10 || b == 13)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
