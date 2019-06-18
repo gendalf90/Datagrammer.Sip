@@ -4,14 +4,23 @@ namespace Datagrammer.Sip
 {
     public readonly struct SipHeader
     {
-        public SipHeader(StringSegment name, StringSegment value)
+        private readonly StringSegment header;
+
+        internal SipHeader(StringSegment header, StringSegment name, StringSegment value)
         {
             Name = name;
             Value = value;
+
+            this.header = header;
         }
 
         public StringSegment Name { get; }
 
         public StringSegment Value { get; }
+
+        public override string ToString()
+        {
+            return header.Value;
+        }
     }
 }

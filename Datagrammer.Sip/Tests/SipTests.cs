@@ -1,5 +1,7 @@
-using Datagrammer.Sip;
-using System;
+using LumiSoft.Net.SIP.Message;
+using LumiSoft.Net.SIP.Stack;
+using oSIP.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Xunit;
 
@@ -10,21 +12,21 @@ namespace Tests
         [Fact]
         public void Test1()
         {
-            var str = @"REGISTER sip:8355@ideasip.com SIP/2.0
+            var str = @"INVITE sip:asdf@biloxi.com SIP/2.0
+Via: SIP/2.0/UDP pc3_3^.atlanta.com;branch=z9hG4bKkjshdyff (asdfwqere);key=value
+To: Bob <sip:bob@biloxi.com>
+From: Alice <sip:alice@atlanta.com>;tag=88sja8x
+Max-Forwards: 70
+Call-ID: 987asjd97y7atg
+CSeq: 986759 INVITE
+Route: Bob <sip:bob@biloxi.com>, Gregg <sip:gregg@biloxi.com>
 ";
-//            var str = @"POST /resource/?query_id=0 HTTP/1.1
-//Host: example.com
-//User-Agent: custom
-//Accept: */*
-//Connection: close
-//Content-Length: 20
-//Content-Type: application/json
 
-//{""key1"":1, ""key2"":2}";
             var bytes = Encoding.UTF8.GetBytes(str);
-            //var parser = new SipRequestParser();
 
-            //parser.Parse(bytes);
+            var value = (SipRequest)SipMessage.Parse(str);
+
+            //var value = SIP_Request.Parse(bytes);
 
         }
     }

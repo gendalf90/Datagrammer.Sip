@@ -12,7 +12,7 @@ namespace Datagrammer.Sip
         private StringSegment remainingChars;
         private StringSegment? currentLine;
 
-        public SipHeaderEnumerator(StringSegment message)
+        internal SipHeaderEnumerator(StringSegment message)
         {
             currentHeader = null;
             remainingChars = message;
@@ -79,7 +79,7 @@ namespace Datagrammer.Sip
                 return false;
             }
 
-            currentHeader = new SipHeader(name, value);
+            currentHeader = new SipHeader(currentLine.Value, name, value);
             return true;
         }
 

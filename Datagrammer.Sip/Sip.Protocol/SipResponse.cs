@@ -13,10 +13,12 @@ namespace Datagrammer.Sip
                              StringSegment version,
                              ReadOnlyMemory<byte> body)
         {
-            Version = version;
             StatusCode = statusCode;
             ReasonPhrase = reasonPhrase;
+            Version = version;
             Body = body;
+            
+            Headers = new SipHeaders(headers);
 
             this.headers = headers;
         }
@@ -27,12 +29,9 @@ namespace Datagrammer.Sip
 
         public StringSegment Version { get; }
 
-        public ReadOnlyMemory<byte> Body { get; }
+        public SipHeaders Headers { get; }
 
-        public SipHeaderEnumerator GetEnumerator()
-        {
-            return new SipHeaderEnumerator(headers);
-        }
+        public ReadOnlyMemory<byte> Body { get; }
 
         public override string ToString()
         {

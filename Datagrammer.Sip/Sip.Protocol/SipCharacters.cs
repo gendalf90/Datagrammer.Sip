@@ -2,7 +2,7 @@
 
 namespace Datagrammer.Sip
 {
-    public static class SipCharacters
+    internal static class SipCharacters
     {
         private const int ArrayLength = 127;
 
