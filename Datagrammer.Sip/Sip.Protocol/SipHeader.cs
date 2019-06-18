@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
 
-namespace Datagrammer.Sip
+namespace Sip.Protocol
 {
     public readonly struct SipHeader
     {

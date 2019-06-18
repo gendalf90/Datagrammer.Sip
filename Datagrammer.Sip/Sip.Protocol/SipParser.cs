@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace Datagrammer.Sip
+namespace Sip.Protocol
 {
     public static class SipParser
     {

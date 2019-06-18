@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Primitives;
 using System;
 
-namespace Datagrammer.Sip
+namespace Sip.Protocol
 {
     public readonly struct SipResponse
     {

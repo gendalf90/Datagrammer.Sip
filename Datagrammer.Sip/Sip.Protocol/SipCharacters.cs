@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Datagrammer.Sip
+namespace Sip.Protocol
 {
     internal static class SipCharacters
     {
