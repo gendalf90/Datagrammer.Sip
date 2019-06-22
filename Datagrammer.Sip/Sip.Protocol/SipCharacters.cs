@@ -8,6 +8,7 @@ namespace Sip.Protocol
 
         private static readonly bool[] token = CreateToken();
         private static readonly bool[] digits = CreateDigits();
+        private static readonly bool[] separators = CreateSeparators();
 
         private static void InitializeLetters(bool[] chars)
         {
@@ -49,6 +50,29 @@ namespace Sip.Protocol
             chars['~'] = true;
         }
 
+        private static void InitializeSeparators(bool[] chars)
+        {
+            chars['('] = true;
+            chars[')'] = true;
+            chars['<'] = true;
+            chars['>'] = true;
+            chars['@'] = true;
+            chars[','] = true;
+            chars[';'] = true;
+            chars[':'] = true;
+            chars['\\'] = true;
+            chars['\"'] = true;
+            chars['/'] = true;
+            chars['['] = true;
+            chars[']'] = true;
+            chars['?'] = true;
+            chars['='] = true;
+            chars['{'] = true;
+            chars['}'] = true;
+            chars[' '] = true;
+            chars['\t'] = true;
+        }
+
         private static bool[] CreateToken()
         {
             var result = new bool[ArrayLength];
@@ -56,6 +80,15 @@ namespace Sip.Protocol
             InitializeDigits(result);
             InitializeLetters(result);
             InitializeTokenSpecials(result);
+
+            return result;
+        }
+
+        private static bool[] CreateSeparators()
+        {
+            var result = new bool[ArrayLength];
+
+            InitializeSeparators(result);
 
             return result;
         }
@@ -73,7 +106,20 @@ namespace Sip.Protocol
         {
             foreach(var b in bytes)
             {
-                if(b < 0 || b >= token.Length || !token[b])
+                if(b < 0 || b >= ArrayLength || !token[b])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsValidToken(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c >= ArrayLength || !token[c])
                 {
                     return false;
                 }
@@ -99,7 +145,7 @@ namespace Sip.Protocol
         {
             foreach (var b in bytes)
             {
-                if (b < 0 || b >= token.Length || !digits[b])
+                if (b < 0 || b >= ArrayLength || !digits[b])
                 {
                     return false;
                 }
@@ -119,6 +165,19 @@ namespace Sip.Protocol
             }
 
             return false;
+        }
+
+        public static int IndexOfSeparator(ReadOnlySpan<char> chars)
+        {
+            for(int i = 0; i < chars.Length; i++)
+            {
+                if(chars[i] < ArrayLength && separators[chars[i]])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
     }
 }
