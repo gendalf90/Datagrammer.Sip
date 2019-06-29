@@ -172,6 +172,19 @@ namespace Sip.Protocol
             return true;
         }
 
+        public static bool IsDigits(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c >= ArrayLength || !digits[c])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool HasCROrLF(ReadOnlySpan<byte> bytes)
         {
             foreach(var b in bytes)
@@ -195,6 +208,19 @@ namespace Sip.Protocol
             for(int i = offset; i < chars.Length; i++)
             {
                 if(chars[i] < ArrayLength && separators[chars[i]])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static int IndexOfWhitespace(ReadOnlySpan<char> chars)
+        {
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] == ' ' || chars[i] == '\t')
                 {
                     return i;
                 }

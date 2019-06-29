@@ -99,7 +99,7 @@ namespace Sip.Protocol
 
         private static StringSegment ReadProtocol(StringSegment chars)
         {
-            var spaceIndex = IndexOfWhitespace(chars);
+            var spaceIndex = SipCharacters.IndexOfWhitespace(chars);
 
             if(spaceIndex == -1)
             {
@@ -119,19 +119,6 @@ namespace Sip.Protocol
             }
 
             return chars.Subsegment(0, separatorIndex);
-        }
-
-        private static int IndexOfWhitespace(StringSegment chars)
-        {
-            for(int i = 0; i < chars.Length; i++)
-            {
-                if(char.IsWhiteSpace(chars[i]))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
         }
 
         private static int IndexOfAnySeparator(StringSegment chars)

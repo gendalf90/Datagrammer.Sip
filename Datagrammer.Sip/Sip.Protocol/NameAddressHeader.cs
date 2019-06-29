@@ -40,7 +40,7 @@ namespace Sip.Protocol
 
             var afterDisplayNameChars = chars.Subsegment(displayName.Length).TrimStart();
             var uri = ReadUri(afterDisplayNameChars);
-            var trimmedUri = RemoveUriBracketsIfExist(uri.TrimEnd());
+            var trimmedUri = uri.TrimEnd();
 
             if(!IsUriValid(trimmedUri))
             {
@@ -146,23 +146,6 @@ namespace Sip.Protocol
         private static bool IsUriValid(StringSegment chars)
         {
             return chars != StringSegment.Empty;
-        }
-
-        private static StringSegment RemoveUriBracketsIfExist(StringSegment uriChars)
-        {
-            if(!IsInUriBrackets(uriChars))
-            {
-                return uriChars;
-            }
-
-            return uriChars.Subsegment(1, uriChars.Length - 2);
-        }
-
-        private static bool IsInUriBrackets(StringSegment chars)
-        {
-            return chars.Length > 1 &&
-                chars[0] == UriStartChar &&
-                chars[chars.Length - 1] == UriEndChar;
         }
     }
 }
