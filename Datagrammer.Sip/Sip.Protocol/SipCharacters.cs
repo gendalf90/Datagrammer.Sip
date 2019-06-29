@@ -128,6 +128,24 @@ namespace Sip.Protocol
             return true;
         }
 
+        public static bool IsValidTokenExcludeWhitespase(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c >= ArrayLength)
+                {
+                    return false;
+                }
+
+                if(!token[c] && c != ' ' && c != '\t')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool IsValidField(ReadOnlySpan<char> chars)
         {
             foreach(var c in chars)
@@ -167,11 +185,57 @@ namespace Sip.Protocol
             return false;
         }
 
-        public static int IndexOfSeparator(ReadOnlySpan<char> chars)
+        public static int IndexOfSeparator(ReadOnlySpan<char> chars, int offset = 0)
         {
-            for(int i = 0; i < chars.Length; i++)
+            if(offset < 0 ||  offset > chars.Length)
+            {
+                throw new IndexOutOfRangeException(nameof(offset));
+            }
+
+            for(int i = offset; i < chars.Length; i++)
             {
                 if(chars[i] < ArrayLength && separators[chars[i]])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static int IndexOfSeparatorExcludeWhitespace(ReadOnlySpan<char> chars, int offset = 0)
+        {
+            if (offset < 0 || offset > chars.Length)
+            {
+                throw new IndexOutOfRangeException(nameof(offset));
+            }
+
+            for (int i = offset; i < chars.Length; i++)
+            {
+                if (chars[i] < ArrayLength && chars[i] != ' ' && chars[i] != '\t' && separators[chars[i]])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static int IndexOfNonEscaped(ReadOnlySpan<char> chars, char c, int offset = 0)
+        {
+            if (offset < 0 || offset > chars.Length)
+            {
+                throw new IndexOutOfRangeException(nameof(offset));
+            }
+
+            for (int i = offset; i < chars.Length; i++)
+            {
+                if (i > 0 && chars[i - 1] == '\\')
+                {
+                    continue;
+                }
+
+                if (chars[i] == c)
                 {
                     return i;
                 }

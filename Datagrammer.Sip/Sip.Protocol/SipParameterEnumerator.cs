@@ -148,7 +148,7 @@ namespace Sip.Protocol
 
         private StringSegment ReadName()
         {
-            var separatorIndex = SipCharacters.IndexOfSeparator(remainingChars.AsSpan());
+            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
 
             if (separatorIndex < 0)
             {
@@ -181,7 +181,7 @@ namespace Sip.Protocol
                 return quotedValue;
             }
 
-            var separatorIndex = SipCharacters.IndexOfSeparator(remainingChars);
+            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
 
             if(separatorIndex < 0)
             {
@@ -195,52 +195,43 @@ namespace Sip.Protocol
         {
             value = StringSegment.Empty;
 
-            if (remainingChars == StringSegment.Empty)
+            if(remainingChars == StringSegment.Empty)
             {
                 return false;
             }
 
-            if (remainingChars[0] != QuoteChar)
+            var startQuoteCharIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
+
+            if(startQuoteCharIndex < 0)
             {
                 return false;
             }
 
-            var quotedChars = remainingChars.Subsegment(1);
-            var endQuoteCharIndex = IndexOfNonEscapedQuoteChar(quotedChars);
-
-            if (endQuoteCharIndex < 0)
+            if(remainingChars[startQuoteCharIndex] != QuoteChar)
             {
                 return false;
             }
 
-            var afterQuotedChars = quotedChars.Subsegment(endQuoteCharIndex + 1);
-            var separatorIndex = SipCharacters.IndexOfSeparator(afterQuotedChars);
+            var endQuoteCharIndex = SipCharacters.IndexOfNonEscaped(remainingChars, QuoteChar, startQuoteCharIndex + 1);
 
-            if(afterQuotedChars.Length > 0 && separatorIndex != 0)
+            if(endQuoteCharIndex < 0)
             {
                 return false;
             }
 
-            value = remainingChars.Subsegment(0, endQuoteCharIndex + 2);
-            return true;
-        }
+            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars, endQuoteCharIndex + 1);
 
-        private int IndexOfNonEscapedQuoteChar(StringSegment chars)
-        {
-            for (int i = 0; i < chars.Length; i++)
+            if(separatorIndex < 0)
             {
-                if(i > 0 && chars[i - 1] == EscapeChar)
-                {
-                    continue;
-                }
-
-                if(chars[i] == QuoteChar)
-                {
-                    return i;
-                }
+                value = remainingChars;
+            }
+            else
+            {
+                value = remainingChars.Subsegment(0, separatorIndex);
             }
 
-            return -1;
+            var trimmedValue = value.Trim();
+            return IsQuoted(trimmedValue);
         }
     }
 }

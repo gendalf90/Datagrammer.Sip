@@ -13,9 +13,9 @@ namespace Tests
         public void Test1()
         {
             var str = @"INVITE sip:asdf@biloxi.com SIP/2.0
-Via: SIP/2.0/UDP pc3_3^.atlanta.com;branch=z9hG4bKkjshdyfferdsdwdf (asdfwqere)
+Via: SIP/2.0/UDP pc3_3^.atlanta.com; branch = z9hG4bKkjshdyfferdsdwdf
 To: Bob <sip:bob@biloxi.com>
-From: Alice <sip:alice@atlanta.com>;tag = 88sja8x;
+From: Alice of death <sip:alice@atlanta.com>;tag = 88sja8x;
 Max-Forwards: 70
 Call-ID: 987asjd97y7atg
 CSeq: 986759 INVITE
