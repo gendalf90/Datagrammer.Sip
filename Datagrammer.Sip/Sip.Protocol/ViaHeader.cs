@@ -7,8 +7,7 @@ namespace Sip.Protocol
     {
         private const char VersionAndProtocolSeparator = '/';
         private const char ParameterSeparatorChar = ';';
-
-        private static readonly string VersionString = "SIP/2.0";
+        private const string VersionString = "SIP/2.0";
 
         internal ViaHeader(StringSegment version,
                            StringSegment protocol,
@@ -59,6 +58,12 @@ namespace Sip.Protocol
             }
 
             var afterHostChars = afterProtocolChars.Subsegment(host.Length).Trim();
+
+            if(!IsParametersOrEmpty(afterHostChars))
+            {
+                return false;
+            }
+
             header = new ViaHeader(VersionString,
                                    protocol,
                                    host,
@@ -75,7 +80,7 @@ namespace Sip.Protocol
                 return false;
             }
 
-            remainingChars = chars.Subsegment(0, VersionString.Length);
+            remainingChars = chars.Subsegment(VersionString.Length);
             return true;
         }
 
@@ -151,7 +156,22 @@ namespace Sip.Protocol
 
         private static bool IsHostValid(StringSegment host)
         {
-            return host != StringSegment.Empty;
+            return host != StringSegment.Empty && SipCharacters.IsValidHost(host);
+        }
+
+        private static bool IsParametersOrEmpty(StringSegment chars)
+        {
+            if(chars == StringSegment.Empty)
+            {
+                return true;
+            }
+
+            if(chars[0] == ParameterSeparatorChar)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

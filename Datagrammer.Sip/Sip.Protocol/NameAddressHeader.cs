@@ -47,7 +47,13 @@ namespace Sip.Protocol
                 return false;
             }
 
-            var afterUriChars = chars.Subsegment(uri.Length).Trim();
+            var afterUriChars = afterDisplayNameChars.Subsegment(uri.Length).Trim();
+
+            if(!IsParametersOrEmpty(afterUriChars))
+            {
+                return false;
+            }
+
             header = new NameAddressHeader(trimmedDisplayName,
                                            trimmedUri,
                                            new SipParameters(afterUriChars));
@@ -61,7 +67,7 @@ namespace Sip.Protocol
             
             if(uriStartIndex == 0 && uriEndIndex > 0)
             {
-                return chars.Subsegment(uriEndIndex + 1);
+                return chars.Subsegment(0, uriEndIndex + 1);
             }
 
             var parametersStartIndex = chars.IndexOf(ParameterSeparatorChar);
@@ -145,7 +151,36 @@ namespace Sip.Protocol
 
         private static bool IsUriValid(StringSegment chars)
         {
-            return chars != StringSegment.Empty;
+            var uri = chars;
+
+            if(IsInUriBrackets(chars))
+            {
+                uri = chars.Subsegment(1, chars.Length - 2);
+            }
+
+            return uri != StringSegment.Empty && SipCharacters.IsValidUri(uri);
+        }
+
+        private static bool IsInUriBrackets(StringSegment chars)
+        {
+            return chars.Length > 1 &&
+                chars[0] == UriStartChar &&
+                chars[chars.Length - 1] == UriEndChar;
+        }
+
+        private static bool IsParametersOrEmpty(StringSegment chars)
+        {
+            if (chars == StringSegment.Empty)
+            {
+                return true;
+            }
+
+            if (chars[0] == ParameterSeparatorChar)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

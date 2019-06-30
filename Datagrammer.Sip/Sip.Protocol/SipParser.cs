@@ -112,16 +112,9 @@ namespace Sip.Protocol
                 return false;
             }
 
-            var reasonPhrase = SliceWord(lineAfterStatusCode);
+            var reasonPhrase = lineAfterStatusCode;
 
             if(!IsReasonPhraseValid(reasonPhrase))
-            {
-                return false;
-            }
-
-            var lineAfterReasonPhrase = SkipWord(lineAfterStatusCode);
-
-            if(!lineAfterReasonPhrase.IsEmpty)
             {
                 return false;
             }
@@ -146,7 +139,9 @@ namespace Sip.Protocol
 
         private static SipRequest CreateRequest(StringSegment headers, ReadOnlyMemory<byte> body)
         {
-            var words = GetFirstLineWords(headers).GetEnumerator();
+            var lineBreakIndex = headers.AsSpan().IndexOf(CRLFString.AsSpan());
+            var firstLine = headers.Subsegment(0, lineBreakIndex);
+            var words = firstLine.Split(WordDelimiters).GetEnumerator();
 
             words.MoveNext();
             var method = words.Current;
@@ -160,23 +155,16 @@ namespace Sip.Protocol
 
         private static SipResponse CreateResponse(StringSegment headers, ReadOnlyMemory<byte> body)
         {
-            var words = GetFirstLineWords(headers).GetEnumerator();
-
-            words.MoveNext();
-            var version = words.Current;
-            words.MoveNext();
-            var statusCode = words.Current;
-            words.MoveNext();
-            var reasonPhrase = words.Current;
+            var firstSeparatorIndex = headers.IndexOfAny(WordDelimiters);
+            var version = headers.Subsegment(0, firstSeparatorIndex);
+            var afterVersionChars = headers.Subsegment(firstSeparatorIndex + 1);
+            var secondSeparatorIndex = afterVersionChars.IndexOfAny(WordDelimiters);
+            var statusCode = afterVersionChars.Subsegment(0, secondSeparatorIndex);
+            var afterStatusCodeChars = afterVersionChars.Subsegment(secondSeparatorIndex + 1);
+            var lineBreakIndex = afterStatusCodeChars.AsSpan().IndexOf(CRLFString.AsSpan());
+            var reasonPhrase = afterStatusCodeChars.Subsegment(0, lineBreakIndex);
 
             return new SipResponse(headers, statusCode, reasonPhrase, version, body);
-        }
-
-        private static StringTokenizer GetFirstLineWords(StringSegment headers)
-        {
-            var lineBreakIndex = headers.AsSpan().IndexOf(CRLFString.AsSpan());
-            var firstLine = headers.Subsegment(0, lineBreakIndex);
-            return firstLine.Split(WordDelimiters);
         }
 
         private static bool TrySliceHeaders(ReadOnlyMemory<byte> bytes, out ReadOnlyMemory<byte> headers)
@@ -270,7 +258,7 @@ namespace Sip.Protocol
 
         private static bool IsUriValid(ReadOnlyMemory<byte> bytes)
         {
-            return !bytes.IsEmpty && !SipCharacters.HasCROrLF(bytes.Span);
+            return !bytes.IsEmpty && SipCharacters.IsValidUri(bytes.Span);
         }
 
         private static bool IsReasonPhraseValid(ReadOnlyMemory<byte> bytes)

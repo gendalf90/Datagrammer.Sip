@@ -9,6 +9,8 @@ namespace Sip.Protocol
         private static readonly bool[] token = CreateToken();
         private static readonly bool[] digits = CreateDigits();
         private static readonly bool[] separators = CreateSeparators();
+        private static readonly bool[] uri = CreateUri();
+        private static readonly bool[] host = CreateHost();
 
         private static void InitializeLetters(bool[] chars)
         {
@@ -73,6 +75,39 @@ namespace Sip.Protocol
             chars['\t'] = true;
         }
 
+        private static void InitializeUri(bool[] chars)
+        {
+            chars['-'] = true;
+            chars['.'] = true;
+            chars['_'] = true;
+            chars['~'] = true;
+            chars[':'] = true;
+            chars['/'] = true;
+            chars['?'] = true;
+            chars['#'] = true;
+            chars['['] = true;
+            chars[']'] = true;
+            chars['@'] = true;
+            chars['!'] = true;
+            chars[']'] = true;
+            chars['$'] = true;
+            chars['&'] = true;
+            chars['\''] = true;
+            chars['('] = true;
+            chars[')'] = true;
+            chars['*'] = true;
+            chars['+'] = true;
+            chars[','] = true;
+            chars[';'] = true;
+            chars['='] = true;
+        }
+
+        private static void InitializeHost(bool[] chars)
+        {
+            chars['-'] = true;
+            chars['.'] = true;
+        }
+
         private static bool[] CreateToken()
         {
             var result = new bool[ArrayLength];
@@ -80,6 +115,28 @@ namespace Sip.Protocol
             InitializeDigits(result);
             InitializeLetters(result);
             InitializeTokenSpecials(result);
+
+            return result;
+        }
+
+        private static bool[] CreateUri()
+        {
+            var result = new bool[ArrayLength];
+
+            InitializeDigits(result);
+            InitializeLetters(result);
+            InitializeUri(result);
+
+            return result;
+        }
+
+        private static bool[] CreateHost()
+        {
+            var result = new bool[ArrayLength];
+
+            InitializeDigits(result);
+            InitializeLetters(result);
+            InitializeHost(result);
 
             return result;
         }
@@ -102,6 +159,32 @@ namespace Sip.Protocol
             return result;
         }
 
+        public static bool IsValidUri(ReadOnlySpan<byte> bytes)
+        {
+            foreach (var b in bytes)
+            {
+                if (b < 0 || b >= ArrayLength || !uri[b])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsValidUri(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c >= ArrayLength || !uri[c])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool IsValidToken(ReadOnlySpan<byte> bytes)
         {
             foreach(var b in bytes)
@@ -120,6 +203,19 @@ namespace Sip.Protocol
             foreach (var c in chars)
             {
                 if (c >= ArrayLength || !token[c])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsValidHost(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c >= ArrayLength || !host[c])
                 {
                     return false;
                 }
@@ -150,7 +246,7 @@ namespace Sip.Protocol
         {
             foreach(var c in chars)
             {
-                if(c < 32 || c > 126)
+                if(c < 33 || c > 126)
                 {
                     return false;
                 }

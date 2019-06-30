@@ -6,7 +6,7 @@ namespace Sip.Protocol
     public struct SipHeaderEnumerator
     {
         private const string CRLFString = "\r\n";
-        private const char SemicolonChar = ':';
+        private const char ColonChar = ':';
 
         private SipHeader? currentHeader;
         private StringSegment remainingChars;
@@ -53,14 +53,14 @@ namespace Sip.Protocol
                 return false;
             }
 
-            var semicolonIndex = currentLine.Value.IndexOf(SemicolonChar);
+            var colonIndex = currentLine.Value.IndexOf(ColonChar);
 
-            if(semicolonIndex < 0)
+            if(colonIndex < 0)
             {
                 return false;
             }
 
-            var name = currentLine.Value.Subsegment(0, semicolonIndex).Trim();
+            var name = currentLine.Value.Subsegment(0, colonIndex).Trim();
 
             if(name == StringSegment.Empty)
             {
@@ -72,9 +72,9 @@ namespace Sip.Protocol
                 return false;
             }
 
-            var value = currentLine.Value.Subsegment(semicolonIndex + 1).Trim();
+            var value = currentLine.Value.Subsegment(colonIndex + 1).Trim();
 
-            if(value == StringSegment.Empty)
+            if (value == StringSegment.Empty)
             {
                 return false;
             }
