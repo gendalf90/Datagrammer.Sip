@@ -20,7 +20,7 @@ namespace Sip.Protocol
 
         public override string ToString()
         {
-            return header.Value;
+            return header.ToString();
         }
     }
 }
