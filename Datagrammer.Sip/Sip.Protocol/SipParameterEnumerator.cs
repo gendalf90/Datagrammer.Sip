@@ -8,15 +8,22 @@ namespace Sip.Protocol
         private const char ParameterSeparatorChar = ';';
         private const char NameValueSeparatorChar = '=';
         private const char QuoteChar = '"';
-        private const char EscapeChar = '\\';
+
+        private static readonly char[] ParameterSeparatorChars = new[] { ParameterSeparatorChar, NameValueSeparatorChar };
 
         private SipParameter? currentParameter;
         private StringSegment remainingChars;
+        private StringSegment currentName;
+        private StringSegment currentValue;
+        private bool isSingleName;
 
         internal SipParameterEnumerator(StringSegment message)
         {
             currentParameter = null;
             remainingChars = message;
+            currentName = StringSegment.Empty;
+            currentValue = StringSegment.Empty;
+            isSingleName = false;
         }
 
         public SipParameter Current => currentParameter ?? throw new ArgumentOutOfRangeException(nameof(Current));
@@ -39,37 +46,35 @@ namespace Sip.Protocol
         private void ClearCurrentParameter()
         {
             currentParameter = null;
-        }
-
-        private bool HasRemainigChars()
-        {
-            return remainingChars != StringSegment.Empty;
+            currentName = StringSegment.Empty;
+            currentValue = StringSegment.Empty;
+            isSingleName = false;
         }
 
         private bool TrySetAsCurrentIfValid(SipParameter parameter)
         {
-            if(!IsValidName(parameter.Name))
+            if(!IsValidName())
             {
                 return false;
             }
 
-            if(!IsValidValue(parameter.Value))
+            if(!IsValidValue())
             {
                 return false;
             }
 
-            currentParameter = parameter;
+            currentParameter = new SipParameter(currentName, currentValue);
             return true;
         }
 
-        private bool IsValidName(StringSegment name)
+        private bool IsValidName()
         {
-            if (name == StringSegment.Empty)
+            if (currentName == StringSegment.Empty)
             {
                 return false;
             }
 
-            if (!SipCharacters.IsValidToken(name.AsSpan()))
+            if (!SipCharacters.IsValidToken(currentName))
             {
                 return false;
             }
@@ -77,31 +82,29 @@ namespace Sip.Protocol
             return true;
         }
 
-        private bool IsValidValue(StringSegment value)
+        private bool IsValidValue()
         {
-            if (value == StringSegment.Empty)
+            if(isSingleName)
             {
                 return true;
             }
 
-            if(IsQuoted(value))
+            if (currentValue == StringSegment.Empty)
+            {
+                return false;
+            }
+
+            if(SipCharacters.IsValidQuoted(currentValue))
             {
                 return true;
             }
 
-            if (!SipCharacters.IsValidToken(value.AsSpan()))
+            if(!SipCharacters.IsValidToken(currentValue))
             {
                 return false;
             }
 
             return true;
-        }
-
-        private bool IsQuoted(StringSegment chars)
-        {
-            return chars.Length > 1 &&
-                   chars[0] == QuoteChar &&
-                   chars[chars.Length - 1] == QuoteChar;
         }
 
         private bool TrySliceParameter(out SipParameter parameter)
@@ -118,15 +121,12 @@ namespace Sip.Protocol
                 return false;
             }
 
-            var name = SliceName();
+            currentName = SliceName().Trim();
+            isSingleName = !TrySliceFirstChar(NameValueSeparatorChar);
 
-            if(TrySliceFirstChar(NameValueSeparatorChar))
+            if(!isSingleName)
             {
-                parameter = new SipParameter(name.Trim(), SliceValue().Trim());
-            }
-            else
-            {
-                parameter = new SipParameter(name.Trim(), StringSegment.Empty);
+                currentValue = SliceValue().Trim();
             }
 
             return true;
@@ -148,7 +148,7 @@ namespace Sip.Protocol
 
         private StringSegment ReadName()
         {
-            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
+            var separatorIndex = remainingChars.IndexOfAny(ParameterSeparatorChars);
 
             if (separatorIndex < 0)
             {
@@ -176,14 +176,11 @@ namespace Sip.Protocol
 
         private StringSegment ReadValue()
         {
-            if (TryReadQuotedValue(out var quotedValue))
-            {
-                return quotedValue;
-            }
+            var hasQuoted = TryReadQuotedValue(out var startIndex, out var length);
+            var skipQuotedOffset = hasQuoted ? startIndex + length : 0;
+            var separatorIndex = remainingChars.IndexOf(ParameterSeparatorChar, skipQuotedOffset);
 
-            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
-
-            if(separatorIndex < 0)
+            if (separatorIndex < 0)
             {
                 return remainingChars;
             }
@@ -191,47 +188,37 @@ namespace Sip.Protocol
             return remainingChars.Subsegment(0, separatorIndex);
         }
 
-        private bool TryReadQuotedValue(out StringSegment value)
+        private bool TryReadQuotedValue(out int startIndex, out int length)
         {
-            value = StringSegment.Empty;
+            startIndex = -1;
+            length = 0;
 
-            if(remainingChars == StringSegment.Empty)
+            if (remainingChars == StringSegment.Empty)
             {
                 return false;
             }
 
-            var startQuoteCharIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars);
+            startIndex = SipCharacters.IndexOfNonWhitespace(remainingChars);
 
-            if(startQuoteCharIndex < 0)
+            if (startIndex < 0)
             {
                 return false;
             }
 
-            if(remainingChars[startQuoteCharIndex] != QuoteChar)
+            if (remainingChars[startIndex] != QuoteChar)
             {
                 return false;
             }
 
-            var endQuoteCharIndex = SipCharacters.IndexOfNonEscaped(remainingChars, QuoteChar, startQuoteCharIndex + 1);
+            var endQuoteCharIndex = SipCharacters.IndexOfNonEscaped(remainingChars, QuoteChar, startIndex + 1);
 
-            if(endQuoteCharIndex < 0)
+            if (endQuoteCharIndex < 0)
             {
                 return false;
             }
 
-            var separatorIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(remainingChars, endQuoteCharIndex + 1);
-
-            if(separatorIndex < 0)
-            {
-                value = remainingChars;
-            }
-            else
-            {
-                value = remainingChars.Subsegment(0, separatorIndex);
-            }
-
-            var trimmedValue = value.Trim();
-            return IsQuoted(trimmedValue);
+            length = endQuoteCharIndex - startIndex;
+            return true;
         }
     }
 }

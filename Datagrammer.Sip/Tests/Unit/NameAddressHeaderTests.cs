@@ -46,6 +46,9 @@ namespace Tests.Unit
         [InlineData("кто-то <sip:alice@atlanta.com> asdf;")]
         [InlineData("Alice sip:alice@atlanta.com")]
         [InlineData("\"Alice <sip:alice@atlanta.com>")]
+        [InlineData("Alice <>")]
+        [InlineData("Alice <    >")]
+        [InlineData("\"Al\"ice\" <sip:alice@atlanta.com>")]
         public void ParseHeader_HeaderIsInvalid(string header)
         {
             var result = NameAddressHeader.TryParse(header, out var parsed);
@@ -54,9 +57,10 @@ namespace Tests.Unit
         }
 
         [Theory]
-        [InlineData("Alice <sip:alice@atlanta.com>")]
+        [InlineData("Alice<sip:alice@atlanta.com>")]
         [InlineData("Alice From Atlanta <sip:alice@atlanta.com>  ")]
         [InlineData("\"Алиса из Атланты\" <sip:alice@atlanta.com>")]
+        [InlineData("\"Алиса \\\"из\\\" Атланты\" <sip:alice@atlanta.com>")]
         [InlineData("sip:alice@atlanta.com")]
         [InlineData("<sip:alice@atlanta.com>")]
         public void ParseHeader_HeaderIsValid(string header)

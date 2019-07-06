@@ -25,7 +25,6 @@ namespace Tests.Unit
             Assert.Equal("192.0.2.3", parameters.Current.Value);
             Assert.True(parameters.MoveNext());
             Assert.Equal("test", parameters.Current.Name);
-            Assert.Equal("", parameters.Current.Value);
         }
 
         [Theory]

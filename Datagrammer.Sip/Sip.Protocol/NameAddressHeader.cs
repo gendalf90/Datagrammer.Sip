@@ -104,7 +104,7 @@ namespace Sip.Protocol
                 return false;
             }
 
-            startIndex = SipCharacters.IndexOfSeparatorExcludeWhitespace(chars);
+            startIndex = SipCharacters.IndexOfNonWhitespace(chars);
 
             if(startIndex < 0)
             {
@@ -134,19 +134,17 @@ namespace Sip.Protocol
                 return true;
             }
 
-            if(IsQuoted(chars))
+            if(SipCharacters.IsValidQuoted(chars))
             {
                 return true;
             }
 
-            return SipCharacters.IsValidTokenExcludeWhitespase(chars);
-        }
+            if(SipCharacters.IsValidTokenExcludeWhitespase(chars))
+            {
+                return true;
+            }
 
-        private static bool IsQuoted(StringSegment chars)
-        {
-            return chars.Length > 1 &&
-                   chars[0] == QuoteChar &&
-                   chars[chars.Length - 1] == QuoteChar;
+            return false;
         }
 
         private static bool IsUriValid(StringSegment chars)

@@ -343,6 +343,24 @@ namespace Sip.Protocol
             return -1;
         }
 
+        public static int IndexOfNonWhitespace(ReadOnlySpan<char> chars, int offset = 0)
+        {
+            if (offset < 0 || offset > chars.Length)
+            {
+                throw new IndexOutOfRangeException(nameof(offset));
+            }
+
+            for (int i = offset; i < chars.Length; i++)
+            {
+                if (chars[i] != ' ' && chars[i] != '\t')
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         public static int IndexOfNonEscaped(ReadOnlySpan<char> chars, char c, int offset = 0)
         {
             if (offset < 0 || offset > chars.Length)
@@ -364,6 +382,22 @@ namespace Sip.Protocol
             }
 
             return -1;
+        }
+
+        public static bool IsValidQuoted(ReadOnlySpan<char> chars)
+        {
+            var isQuoted = chars.Length > 1 &&
+                chars[0] == '"' &&
+                chars[chars.Length - 1] == '"';
+
+            if(!isQuoted)
+            {
+                return false;
+            }
+
+            var unquotedValue = chars.Slice(1, chars.Length - 2);
+            var nonEscapedQuoteCharIndex = IndexOfNonEscaped(unquotedValue, '"');
+            return nonEscapedQuoteCharIndex < 0;
         }
     }
 }
