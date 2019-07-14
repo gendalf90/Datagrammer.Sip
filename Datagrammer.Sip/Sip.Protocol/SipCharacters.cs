@@ -294,6 +294,19 @@ namespace Sip.Protocol
             return false;
         }
 
+        public static bool HasCROrLF(ReadOnlySpan<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                if (c == '\n' || c == '\r')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static int IndexOfSeparator(ReadOnlySpan<char> chars, int offset = 0)
         {
             if(offset < 0 ||  offset > chars.Length)

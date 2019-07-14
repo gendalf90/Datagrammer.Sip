@@ -18,9 +18,9 @@ namespace Sip.Protocol
 
         public StringSegment Value { get; }
 
-        public override string ToString()
+        public StringSegment ToStringSegment()
         {
-            return header.ToString();
+            return header;
         }
     }
 }

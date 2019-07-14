@@ -33,9 +33,9 @@ namespace Sip.Protocol
 
         public ReadOnlyMemory<byte> Body { get; }
 
-        public override string ToString()
+        public StringSegment ToStringSegment()
         {
-            return headers.Value;
+            return headers;
         }
     }
 }
