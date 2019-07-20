@@ -163,7 +163,7 @@ namespace Sip.Protocol
         {
             foreach (var b in bytes)
             {
-                if (b < 0 || b >= ArrayLength || !uri[b])
+                if (b >= ArrayLength || !uri[b])
                 {
                     return false;
                 }
@@ -189,7 +189,7 @@ namespace Sip.Protocol
         {
             foreach(var b in bytes)
             {
-                if(b < 0 || b >= ArrayLength || !token[b])
+                if(b >= ArrayLength || !token[b])
                 {
                     return false;
                 }
@@ -259,7 +259,7 @@ namespace Sip.Protocol
         {
             foreach (var b in bytes)
             {
-                if (b < 0 || b >= ArrayLength || !digits[b])
+                if (b >= ArrayLength || !digits[b])
                 {
                     return false;
                 }
