@@ -3,18 +3,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Authors>Roman Boykov</Authors>
+    <Description>SIP support for Datagrammer</Description>
+    <PackageProjectUrl>https://github.com/gendalf90/Datagrammer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gendalf90/Datagrammer.Sip</RepositoryUrl>
+    <PackageTags>udp client datagram datagrammer sip dataflow reactive rx observable</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Datagrammer" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Sip.Protocol\Sip.Protocol.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
